@@ -509,4 +509,22 @@ with pkgs;
       done
     '';
   });
+
+  hipCPU = callPackage ./development/compilers/hipsycl/hipCPU.nix { };
+  hipsycl = callPackage ./development/compilers/hipsycl {
+    inherit (self) hipCPU;
+    # hip = self.hip-clang;
+    hip = self.hip;
+    clang = self.amd-clang;
+    clang-unwrapped = self.amd-clang-unwrapped;
+    llvm = self.amd-llvm;
+    openmp = self.amd-openmp;
+
+    # LLVM from nixpkgs is missing include/llvm/Support/Alignment.h
+    # clang = pkgs.llvmPackages_9.clang;
+    # clang-unwrapped = pkgs.llvmPackages_9.clang-unwrapped;
+    # llvm = pkgs.llvmPackages_9.llvm;
+    # openmp = pkgs.llvmPackages_9.openmp;
+    device-libs = self.amd-device-libs;
+  };
 }
