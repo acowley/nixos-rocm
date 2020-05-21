@@ -106,11 +106,22 @@ with pkgs;
     device-libs = self.rocm-device-libs;
   });
 
+  rocm-opencl-src = fetchFromGitHub {
+    owner = "RadeonOpenCompute";
+    repo = "ROCm-OpenCL-Runtime";
+    # rev = tag;
+    # sha256 = "1xl2kr019az3cnkqv8wh5hpsxdnify7kvf2fxhxkn5cb79b0v5yi";
+    rev = "9c84f7c281d8cbfb8445cb5b949f0b13e5d7636d";
+    sha256 = "14andrbjbpha2yfwac6yvb9ksma3bm0sd0x69m9xik305h40glgn";
+    name = "ROCm-OpenCL-Runtime-src";
+  };
+
   rocm-opencl-runtime = callPackage ./development/libraries/rocm-opencl-runtime.nix {
     stdenv = pkgs.overrideCC stdenv self.rocm-clang;
     inherit (self) roct rocm-clang rocm-clang-unwrapped rocm-cmake;
-    inherit (self) rocm-device-libs rocm-lld rocm-llvm rocr;
+    inherit (self) rocm-device-libs rocm-lld rocm-llvm rocr rocclr;
     comgr = self.rocm-ocl-comgr;
+    src = self.rocm-opencl-src;
   };
   rocm-opencl-icd = callPackage ./development/libraries/rocm-opencl-icd.nix {
     inherit (self) rocm-opencl-runtime;
@@ -310,6 +321,12 @@ with pkgs;
     lld = self.amd-lld;
     clang = self.amd-clang;
     device-libs = self.amd-device-libs;
+  };
+
+  rocclr = callPackage ./development/libraries/rocclr {
+    comgr = self.hcc-comgr;
+    clang = self.hcc-clang;
+    inherit (self) rocm-opencl-src;
   };
 
   # A HIP compiler that does not go through hcc
