@@ -46,12 +46,12 @@ stdenv.mkDerivation rec {
     "-DTensile_LOGIC=hip_lite"
   ];
 
+  # sed '/add_custom_command(/,/^ )/d' -i library/src/CMakeLists.txt
   prePatch = ''
     patchShebangs ./header_compilation_tests.sh
     sed -e '/include(virtualenv)/d' \
         -e '/virtualenv_install.*/d' \
         -i CMakeLists.txt
-    sed '/add_custom_command(/,/^ )/d' -i library/src/CMakeLists.txt
 
     substituteInPlace ./clients/benchmarks/CMakeLists.txt \
         --replace 'cblas lapack roc::rocblas' 'blas cblas lapack roc::rocblas'
