@@ -42,6 +42,7 @@ stdenv.mkDerivation rec {
   cmakeFlags = [
     "-DOPENCL_DIR=${rocm-opencl-runtime.src}"
   ];
+  shareDocName = "ROCclr";
 
   preFixup = ''
     mv $out/include/include/* $out/include
