@@ -37,6 +37,7 @@ stdenv.mkDerivation rec {
         'set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ''${CMAKE_INSTALL_LIBDIR})'
     substituteInPlace device/comgrctx.cpp \
       --replace "libamd_comgr.so" "${rocm-comgr}/lib/libamd_comgr.so"
+    sed '/^find_library/,/^)/d' -i CMakeLists.txt
   '';
 
   cmakeFlags = [
