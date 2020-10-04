@@ -1,5 +1,5 @@
-{stdenv, fetchFromGitHub, cmake, rocm-thunk, rocm-runtime, hcc-unwrapped, hip
-, python, buildPythonPackage, fetchPypi, ply}:
+{stdenv, fetchFromGitHub, cmake, rocm-thunk, rocm-runtime, rocminfo, hip
+, python, buildPythonPackage, fetchPypi, ply }:
 let
   CppHeaderParser = buildPythonPackage rec {
     pname = "CppHeaderParser";
@@ -20,27 +20,27 @@ let
       maintainers = [];
     };
   };
-  pyenv = python.withPackages (ps: [CppHeaderParser]);
+  pyenv = python.withPackages (ps: [ CppHeaderParser ]);
 in stdenv.mkDerivation rec {
   name = "roctracer";
-  version = "3.3.0";
+  version = "3.8.0";
   src = fetchFromGitHub {
     owner = "ROCm-Developer-Tools";
     repo = "roctracer";
-    rev = "roc-${version}";
-    sha256 = "00iwah3x1cm5ghhrwcp0njiy5vvwnh4wcpcfs8k6zacn9fd2dh8l";
+    rev = "rocm-${version}";
+    sha256 = "1b3bh9skhvkrw4q2hzd0i2yhgmm17y0hvi8plz9vg397yv1za80k";
   };
   src2 = fetchFromGitHub {
     owner = "ROCmSoftwarePlatform";
     repo = "hsa-class";
-    rev = "7defb6d9b40d20f6b085be3a5727d1b6bf601d14";
-    sha256 = "0wbya4s7wbsxwg39lbz545c19qj17qc80ccs6gw8ypyal6yix6l5";
+    rev = "19b1191cf9ff73e72a73e34fdcec142efb43eb77";
+    sha256 = "0j35ns2s4b426v6jppchsp6k5xi90xvq6agzz85h5p1qv0fvapl4";
   };
   nativeBuildInputs = [ cmake pyenv ];
-  buildInputs = [ rocm-thunk rocm-runtime hcc-unwrapped hip ];
+  buildInputs = [ rocm-thunk rocm-runtime rocminfo hip ];
   preConfigure = ''
-    export HCC_HOME=${hcc-unwrapped}
     export HIP_PATH=${hip}
+    export HIP_VDI=1
     ln -s ${src2} "test/hsa"
   '';
   patchPhase = ''
@@ -49,9 +49,12 @@ in stdenv.mkDerivation rec {
     patchShebangs test
     sed 's|/usr/bin/clang++|clang++|' -i cmake_modules/env.cmake
     sed -e 's|"libhip_hcc.so"|"${hip}/lib/libhip_hcc.so"|' \
-        -e 's|"libmcwamp.so"|"${hcc-unwrapped}/lib/libmcwamp.so"|' \
         -i src/core/loader.h
   '';
+  cmakeFlags = [
+    "-DHIP_PATH=${hip}"
+    "-DHIP_VDI=1"
+  ];
   postFixup = ''
     patchelf --replace-needed libroctracer64.so.1 $out/roctracer/lib/libroctracer64.so.1 $out/roctracer/tool/libtracer_tool.so
     ln -s $out/roctracer/include/* $out/include

@@ -1,0 +1,107 @@
+diff --exclude '*~' -ruN WORKSPACE WORKSPACE
+--- a/WORKSPACE
++++ b/WORKSPACE
+@@ -36,6 +36,18 @@
+ 
+ bazel_toolchains_repositories()
+ 
++load(
++    "@io_bazel_rules_docker//repositories:repositories.bzl",
++    container_repositories = "repositories",
++)
++
++container_repositories()
++
++load("//third_party/toolchains/preconfig/generate:workspace.bzl",
++     "remote_config_workspace")
++
++remote_config_workspace()
++
+ # Use `swift_rules_dependencies` to fetch the toolchains. With the
+ # `git_repository` rules above, the following call will skip redefining them.
+ load("@build_bazel_rules_swift//swift:repositories.bzl", "swift_rules_dependencies")
+diff --exclude '*~' -ruN a/tensorflow/opensource_only.files b/tensorflow/opensource_only.files
+--- a/tensorflow/opensource_only.files
++++ b/tensorflow/opensource_only.files
+@@ -232,6 +232,7 @@
+ tensorflow/third_party/toolchains/preconfig/generate/archives.bzl
+ tensorflow/third_party/toolchains/preconfig/generate/containers.bzl
+ tensorflow/third_party/toolchains/preconfig/generate/generate.bzl
++tensorflow/third_party/toolchains/preconfig/generate/workspace.bzl
+ tensorflow/third_party/toolchains/preconfig/ubuntu16.04/clang/BUILD
+ tensorflow/third_party/toolchains/preconfig/ubuntu16.04/clang/cc_toolchain_config.bzl
+ tensorflow/third_party/toolchains/preconfig/ubuntu16.04/clang/dummy_toolchain.bzl
+diff --exclude '*~' a/third_party/toolchains/preconfig/generate/workspace.bzl b/third_party/toolchains/preconfig/generate/workspace.bzl
+--- /dev/null
++++ b/third_party/toolchains/preconfig/generate/workspace.bzl
+@@ -0,0 +1,70 @@
++load(
++    "@io_bazel_rules_docker//repositories:repositories.bzl",
++    container_repositories = "repositories",
++)
++load(
++    "@io_bazel_rules_docker//container:container.bzl",
++    "container_pull",
++)
++load(":containers.bzl", "container_digests")
++
++def _remote_config_workspace():
++    container_repositories()
++
++    container_pull(
++        name = "centos6",
++        registry = "gcr.io",
++        repository = "tensorflow-testing/nosla-centos6",
++        digest = container_digests["centos6"],
++    )
++
++    container_pull(
++        name = "ubuntu16.04",
++        registry = "gcr.io",
++        repository = "tensorflow-testing/nosla-ubuntu16.04",
++        digest = container_digests["ubuntu16.04"],
++    )
++
++    container_pull(
++        name = "cuda10.0-cudnn7-ubuntu14.04",
++        registry = "gcr.io",
++        repository = "tensorflow-testing/nosla-cuda10.0-cudnn7-ubuntu14.04",
++        digest = container_digests["cuda10.0-cudnn7-ubuntu14.04"],
++    )
++
++    container_pull(
++        name = "cuda10.0-cudnn7-centos6",
++        registry = "gcr.io",
++        repository = "tensorflow-testing/nosla-cuda10.0-cudnn7-centos6",
++        digest = container_digests["cuda10.0-cudnn7-centos6"],
++    )
++
++    container_pull(
++        name = "cuda10.1-cudnn7-centos6",
++        registry = "gcr.io",
++        repository = "tensorflow-testing/nosla-cuda10.1-cudnn7-centos6",
++        digest = container_digests["cuda10.1-cudnn7-centos6"],
++    )
++
++    container_pull(
++        name = "ubuntu16.04-manylinux2010",
++        registry = "gcr.io",
++        repository = "tensorflow-testing/nosla-ubuntu16.04-manylinux2010",
++        digest = container_digests["ubuntu16.04-manylinux2010"],
++    )
++
++    container_pull(
++        name = "cuda10.0-cudnn7-ubuntu16.04-manylinux2010",
++        registry = "gcr.io",
++        repository = "tensorflow-testing/nosla-cuda10.0-cudnn7-ubuntu16.04-manylinux2010",
++        digest = container_digests["cuda10.0-cudnn7-ubuntu16.04-manylinux2010"],
++    )
++
++    container_pull(
++        name = "cuda10.1-cudnn7-ubuntu16.04-manylinux2010",
++        registry = "gcr.io",
++        repository = "tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010",
++        digest = container_digests["cuda10.1-cudnn7-ubuntu16.04-manylinux2010"],
++    )
++
++remote_config_workspace = _remote_config_workspace

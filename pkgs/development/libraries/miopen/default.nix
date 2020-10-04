@@ -20,6 +20,8 @@ stdenv.mkDerivation rec {
   buildInputs = [ rocm-runtime half openssl boost rocblas miopengemm comgr sqlite bzip2 clang-ocl hip ]
     ++ lib.optionals use_ocl [ rocm-opencl-runtime ];
 
+  CXXFLAGS = "-DHALF_ENABLE_F16C_INTRINSICS=0 -isystem ${clang}/bin";
+  CPPFLAGS = "-DHALF_ENABLE_F16C_INTRINSICS=0 -isystem ${clang}/bin";
   cmakeFlags = [
     "-DCMAKE_PREFIX_PATH=${if use_ocl then "${hip};${clang-ocl}" else "${hip}"}"
     "-DCMAKE_INSTALL_INCLUDEDIR=include"
@@ -28,11 +30,13 @@ stdenv.mkDerivation rec {
     "-DMIOPEN_USE_MIOPENGEMM=ON"
     "-DMIOPEN_AMDGCN_ASSEMBLER_PATH=${clang}/bin"
     "-DMIOPEN_OFFLOADBUNDLER_BIN=${clang-unwrapped}/bin/clang-offload-bundler"
+    "-DHALF_INCLUDE_DIR=${half}"
   ] ++ (if !use_ocl
-        then [ # "-DCMAKE_CXX_COMPILER=${clang}/bin/clang++"
-               # "-DCMAKE_C_COMPILER=${clang}/bin/clang"
+        then [ #"-DCMAKE_CXX_COMPILER=${clang}/bin/clang++"
+               #"-DCMAKE_C_COMPILER=${clang}/bin/clang"
                "-DCMAKE_CXX_COMPILER=${hip}/bin/hipcc"
                "-DCMAKE_C_COMPILER=${hip}/bin/hipcc"
+               "-DMIOPEN_HIP_COMPILER=${clang}/bin/clang++"
                "-DMIOPEN_BACKEND=HIP"
                "-DAMDGPU_TARGETS=${lib.strings.concatStringsSep ";" (config.rocmTargets or [ "gfx803" "gfx900" "gfx906" ])}"
                # "-DENABLE_HIP_WORKAROUNDS=YES"
@@ -44,6 +48,10 @@ stdenv.mkDerivation rec {
                # "-DOPENCL_LIB_DIRS=${rocm-opencl-runtime}/lib"
         ]
   );
+
+  #preBuild = ''
+  #  CXX=${hip}/bin/hipcc
+  #'';
   
   patchPhase = ''
     sed -e 's,cmake_minimum_required( VERSION 2.8.12 ),cmake_minimum_required( VERSION 3.10 ),' \
