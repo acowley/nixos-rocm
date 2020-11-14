@@ -208,7 +208,7 @@ with pkgs;
     opencl = self.rocm-opencl-runtime;
   };
 
-  tensorflow-rocm-bin = python37Packages.callPackage ./development/libraries/tensorflow/1/bin/bin.nix {
+  tensorflow-rocm = python37Packages.callPackage ./development/libraries/tensorflow/bin.nix {
     inherit (self) miopen-hip miopengemm rocrand
                    rocfft rocblas rocm-runtime rccl cxlactivitylogger;
     hip = self.hip-clang;
@@ -231,17 +231,11 @@ with pkgs;
   #   };
   # };
 
-  # tensorflow2-rocm-bin = self.tf2PyPackages.pkgs.callPackage ./development/libraries/tensorflow/2/bin.nix {
+  # tensorflow2-rocm = self.tf2PyPackages.pkgs.callPackage ./development/libraries/tensorflow/bin2.nix {
   #   inherit (self) hcc hcc-unwrapped miopen-hip miopengemm rocrand
   #                  rocfft rocblas rocm-runtime rccl cxlactivitylogger;
   #   hip = self.hip;
   # };
-
-  tensorflow2-rocm = python3Packages.callPackage ./development/libraries/tensorflow/2 {
-    inherit (self) rocm-runtime rccl rocprim hipcub rocsparse hipsparse rocblas 
-                   miopengemm miopen-hip rocrand rocfft;
-    hip = self.hip-clang;
-  };
 
   # pytorch-rocm = python37Packages.callPackage ./development/libraries/pytorch/default.nix {
   #   inherit (self) rocm-runtime miopengemm rocsparse hipsparse rocthrust
